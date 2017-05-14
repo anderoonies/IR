@@ -1,0 +1,10 @@
+define :main( ){
+:entry
+  
+v0 <- 1 * 8
+v1 <- v0 + 16
+v2 <- a + v1
+l1 <- load v2
+return
+}
+}

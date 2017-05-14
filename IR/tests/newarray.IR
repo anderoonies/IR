@@ -1,0 +1,6 @@
+define void :main( ) {
+  :entry
+  int64[][] %a
+  %a <- new Array(%p1, %p2)
+  return
+}

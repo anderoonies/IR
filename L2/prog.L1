@@ -1,0 +1,14 @@
+(:main
+(:main
+0 0
+:entry
+(rdx <- 1)
+(rdx *= 8)
+(r8 <- rdx)
+(r8 += 16)
+(rdx <- (mem rcx 0))
+(rcx <- rdx)
+(rcx += r8)
+(return)
+)
+)
