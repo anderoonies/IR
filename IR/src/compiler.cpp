@@ -201,7 +201,7 @@ void Compiler::Compile(IR::Program p) {
           // v0 <- v0 +1
           output << v0 << " <- " << v0 << " + 1\n";
           // v0 <- v0 + \encode(dim.size() + 1)
-          output << v0 << " <- " << v0 << " + " << 1 + encode(alloc->dimensions.size()) << endl;
+          output << v0 << " <- " << v0 << " + " << encode(1 + alloc->dimensions.size()) << endl;
           // v0 <- call allocate(v0, 1)
           output << v0 << " <- call allocate(" << v0 << ", 1)\n";
           // vo <- v0 + 8
