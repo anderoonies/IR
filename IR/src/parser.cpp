@@ -734,6 +734,7 @@ namespace IR {
   template<> struct action < IR_te_rule >{
     static void apply( const pegtl::input &in, IR::Program &p){
       end_block(p);
+      clear_memory();
     }
   };
 
