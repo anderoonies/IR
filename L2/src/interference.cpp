@@ -335,12 +335,12 @@ void generate_graph(
   lines.insert(lines.end(), LOCAL_IN.begin(), LOCAL_IN.end());
   lines.insert(lines.end(), LOCAL_OUT.begin(), LOCAL_OUT.end());
   // KILL and OUT also interfere with eachother!
-  for (int line = 0; line < KILL.size(); line++){
+  for (int line = 1; line < KILL.size(); line++){
     if (!f->instructions[line]->y_to_x_type) {
       set<string> OUT_PLUS_KILL_LINE;
       for (auto v : OUT[line])
         OUT_PLUS_KILL_LINE.insert(v);
-      for (auto v : KILL[line])
+      for (auto v : KILL[line - 1])
         OUT_PLUS_KILL_LINE.insert(v);
       lines.push_back(OUT_PLUS_KILL_LINE);
     }
