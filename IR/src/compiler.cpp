@@ -169,8 +169,11 @@ void Compiler::Compile(IR::Program p) {
         else if (shared_ptr<IR::Call> call = dynamic_pointer_cast<IR::Call>(i))
         {
           output << "call " << call->callee.name << "(";
-          for (auto arg : call->args)
-            output << arg.name << ", ";
+          if (call->args.size() > 1)
+            for (auto arg : call->args)
+              output << arg.name << ", ";
+          else if (call->args.size() == 1)
+            output << call->args.at(0).name;
           output << ")\n";
         }
         else if (shared_ptr<IR::ArrayAllocate> alloc = dynamic_pointer_cast<IR::ArrayAllocate>(i))
