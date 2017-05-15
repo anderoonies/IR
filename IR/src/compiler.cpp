@@ -70,16 +70,17 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
   string addr = get_free_var("addr", f);
 
   for (int i = dimensions.size() - 1; i >= 0; i--) {
-    output << addr_vars.at(i) << " <- " << arr << " + " << (24 + i * 8) << endl;
+    output << addr_vars.at(i) << " <- " << arr << " + " << (16 + i * 8) << endl;
     output << dim_vars.at(i) << " <- load " << addr_vars.at(i) << endl;
     output << dim_vars.at(i) << " <- " << dim_vars.at(i) << " >> 1\n";
   }
-  output << mult << " <- 1\n";
-  for (int i = dimensions.size() - 1; i >= 0; i--) {
+  output << mult << " <- " << dimensions.back().name << endl;
+  for (int i = dimensions.size() - 1; i > 0; i--) {
     output << indexvars.at(i) << " <- " << indices.at(i).name << endl;
     output << index << " <- " << indexvars.at(i) << " * " << mult << endl;
-    output << mult << " <- " << mult << " * " << dim_vars.at(i) << endl;
+    output << mult << " <- " << mult << " * " << dimensions.at(i - 1).name << endl;
   }
+  output << index << " <- " << index << " + " << indices.back().name << endl;
   output << offset << " <- " << index << " * 8\n";
   output << offset << " <- " << index << " + " << (16 + (8 * dimensions.size())) << endl;
   output << addr << " <- " << arr << " + " << offset << endl;
