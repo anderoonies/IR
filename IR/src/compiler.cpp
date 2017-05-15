@@ -219,7 +219,7 @@ void Compiler::Compile(IR::Program p) {
         else if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i))
         {
           string addr = write_offset(output, f, write);
-          output << "store " << addr << " <- " << write->rhs.name;
+          output << "store " << addr << " <- " << write->rhs.name << endl;
         }
         else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
         {
