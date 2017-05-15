@@ -207,7 +207,7 @@ void Compiler::Compile(IR::Program p) {
           // vo <- v0 + 8
           output << v0 << " <- " << alloc->lhs.name << " + 8\n";
           // store v0 <- \encode(dim.size())
-          output << "store " << v0 << " <- " << encode(alloc->dimensions.size()) << endl;
+          output << "store " << v0 << " <- " << encode(1 + alloc->dimensions.size()) << endl;
           // for each dim:
           // v0 <- v0 + 8
           // store v0 <- dim
