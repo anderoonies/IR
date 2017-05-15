@@ -211,9 +211,9 @@ void Compiler::Compile(IR::Program p) {
           // for each dim:
           // v0 <- v0 + 8
           // store v0 <- dim
-          for (auto dim : alloc->dimensions) {
-            output << v0 << " <- " << v0 << " + 8\n";
-            output << "store " << v0 << " <- " << dim.name << endl;
+          for (int i = 0; i < alloc->dimensions.size(); i++) {
+            output << v0 << " <- " << alloc->lhs.name << " + " << (i + alloc->dimensions.size()) * 8 << endl;
+            output << "store " << v0 << " <- " << alloc->dimensions[i].name << endl;
           }
         }
         else if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i))
