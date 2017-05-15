@@ -212,7 +212,7 @@ void Compiler::Compile(IR::Program p) {
           // v0 <- v0 + 8
           // store v0 <- dim
           for (int i = 0; i < alloc->dimensions.size(); i++) {
-            output << v0 << " <- " << alloc->lhs.name << " + " << (i + alloc->dimensions.size()) * 8 << endl;
+            output << v0 << " <- " << alloc->lhs.name << " + " << (1 + i + alloc->dimensions.size()) * 8 << endl;
             output << "store " << v0 << " <- " << alloc->dimensions[i].name << endl;
           }
         }
