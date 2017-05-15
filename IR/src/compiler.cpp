@@ -193,8 +193,8 @@ void Compiler::Compile(IR::Program p) {
             output << v0 << " <- " << dim_vars.at(0) << endl;
           else {
             output << v0 << " <- " << dim_vars.at(0) << endl;
-            for (auto dim_var : dim_vars)
-              output << v0 << " <- " << v0 << " * " << dim_var << endl;
+            for (int i = 1; i < dim_vars.size(); i++)
+              output << v0 << " <- " << v0 << " * " << dim_vars[i] << endl;
           }
           // v0 <- v0 << 1
           output << v0 << " <- " << v0 << " << 1\n";
