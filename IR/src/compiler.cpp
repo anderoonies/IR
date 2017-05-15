@@ -7,7 +7,7 @@
 using namespace std;
 
 int encode(int n) {
-  return (n << 1);
+  return (n << 1) + 1;
 };
 
 int decode(int n) {
@@ -201,13 +201,13 @@ void Compiler::Compile(IR::Program p) {
           // v0 <- v0 +1
           output << v0 << " <- " << v0 << " + 1\n";
           // v0 <- v0 + \encode(dim.size() + 1)
-          output << v0 << " <- " << v0 << " + " << encode(1 + alloc->dimensions.size()) << endl;
+          output << v0 << " <- " << v0 << " + " << ((1 + alloc->dimensions.size()) << 1) << endl;
           // v0 <- call allocate(v0, 1)
           output << alloc->lhs.name << " <- call allocate(" << v0 << ", 1)\n";
           // vo <- v0 + 8
           output << v0 << " <- " << alloc->lhs.name << " + 8\n";
-          // store v0 <- \encode(dim.size()) + 1
-          output << "store " << v0 << " <- " << 1 + encode(alloc->dimensions.size()) << endl;
+          // store v0 <- \encode(dim.size())
+          output << "store " << v0 << " <- " << encode(alloc->dimensions.size()) << endl;
           // for each dim:
           // v0 <- v0 + 8
           // store v0 <- dim
