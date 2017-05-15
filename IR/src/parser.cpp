@@ -786,7 +786,7 @@ namespace IR {
     static void apply( const pegtl::input &in, IR::Program &p){
       shared_ptr<IR::LengthRead> lr = make_shared<IR::LengthRead>();
       lr->lhs = *parsed_variables.at(0);
-      lr->rhs = *parsed_variables.at(1);
+      lr->rhs = *parsed_variables.back();
       lr->index = parsed_t_vals.back();
       add_instruction(p, lr);
       clear_memory();
