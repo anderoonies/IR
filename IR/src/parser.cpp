@@ -778,7 +778,6 @@ namespace IR {
       );
       add_instruction(p, alloc);
       add_alloc(p, alloc);
-      cout << "parsed alloc\n";
       clear_memory();
     }
   };
