@@ -7,11 +7,11 @@
 using namespace std;
 
 int encode(int n) {
-  return (n << 1) + 1;
+  return (n << 1);
 };
 
 int decode(int n) {
-  return (n >> 1) + 1;
+  return (n >> 1) - 1;
 };
 
 string get_free_var(string seed, shared_ptr<IR::Function> f) {
@@ -206,8 +206,8 @@ void Compiler::Compile(IR::Program p) {
           output << alloc->lhs.name << " <- call allocate(" << v0 << ", 1)\n";
           // vo <- v0 + 8
           output << v0 << " <- " << alloc->lhs.name << " + 8\n";
-          // store v0 <- \encode(dim.size())
-          output << "store " << v0 << " <- " << encode(alloc->dimensions.size()) << endl;
+          // store v0 <- \encode(dim.size()) + 1
+          output << "store " << v0 << " <- " << 1 + encode(alloc->dimensions.size()) << endl;
           // for each dim:
           // v0 <- v0 + 8
           // store v0 <- dim
