@@ -59,6 +59,7 @@ int main( int argc, char **argv ){
   IR::Program p = IR::IR_parse_file(argv[optind]);
   // compile and dump it to the outfile
   Compiler::Compile(p);
+  cout << "done compy\n";
 
   return 0;
 }

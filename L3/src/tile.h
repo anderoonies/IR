@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 namespace tile {
 
     struct Tile {
@@ -565,10 +566,15 @@ namespace tile {
     };
 
     struct LoadOffset : virtual Tile {
+        // this helps.
+        bool is_number(const string& s) {
+          return !s.empty() && find_if(s.begin(), s.end(), [](char c) { return !isdigit(c); }) == s.end();
+        }
         bool valid_offset(shared_ptr<tree::Tree> tree) {
           if (tree->op != tree::add)
             return false;
-          if (stoi(tree->rhs->root->item.name) % 8 == 0)
+          if (is_number(tree->rhs->root->item.name) &&
+              stoi(tree->rhs->root->item.name) % 8 == 0)
             return true;
           return false;
         }

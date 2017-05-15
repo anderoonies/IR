@@ -390,6 +390,8 @@ namespace IR {
 
   struct IR_instruction_rule :
     pegtl::sor<
+      IR_array_read_rule,
+      IR_array_write_rule,
       IR_length_read_rule,
       IR_array_allocate_rule,
       IR_tuple_allocate_rule,
@@ -397,8 +399,6 @@ namespace IR {
       IR_i_label_rule,
       IR_declaration_instruction_rule,
       IR_assignment_rule,
-      IR_array_read_rule,
-      IR_array_write_rule,
       IR_call_rule,
       IR_call_assign_rule
     > {};
@@ -653,7 +653,6 @@ namespace IR {
       dec->type = parsed_type;
       dec->var = *parsed_variables.at(0);
       add_instruction(p, dec);
-      cout << "dec inst\n";
       clear_memory();
     }
   };
@@ -778,6 +777,7 @@ namespace IR {
       );
       add_instruction(p, alloc);
       add_alloc(p, alloc);
+      cout << "parsed alloc\n";
       clear_memory();
     }
   };
@@ -789,6 +789,36 @@ namespace IR {
       lr->rhs = *parsed_variables.at(1);
       lr->index = parsed_t_vals.back();
       add_instruction(p, lr);
+      clear_memory();
+    }
+  };
+
+  template<> struct action < IR_array_read_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      shared_ptr<IR::IndexRead> read = make_shared<IR::IndexRead>();
+      read->lhs = *parsed_variables.at(0);
+      read->rhs = *parsed_variables.at(1);
+      read->indices.insert(
+        read->indices.end(),
+        parsed_t_vals.begin(),
+        parsed_t_vals.end()
+      );
+      add_instruction(p, read);
+      clear_memory();
+    }
+  };
+
+  template<> struct action < IR_array_write_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      shared_ptr<IR::IndexWrite> write = make_shared<IR::IndexWrite>();
+      write->lhs = *parsed_variables.at(0);
+      write->rhs = parsed_s_vals.back();
+      write->indices.insert(
+        write->indices.end(),
+        parsed_t_vals.begin(),
+        parsed_t_vals.end()
+      );
+      add_instruction(p, write);
       clear_memory();
     }
   };

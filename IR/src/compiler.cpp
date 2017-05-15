@@ -42,9 +42,16 @@ vector<string> get_free_vars(string seed, int n_vars, shared_ptr<IR::Function> f
 string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR::Instruction> i) {
   vector<IR::IR_t> dimensions;
   string arr;
-  shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i);
-  dimensions = f->data_structs.find(write->lhs.name)->second;
-  arr = write->lhs.name; 
+  vector<IR::IR_t> indices;
+  if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i)) {
+    dimensions = f->data_structs.find(write->lhs.name)->second;
+    arr = write->lhs.name; 
+    indices = write->indices;
+  } else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i)) {
+    dimensions = f->data_structs.find(read->rhs.name)->second;
+    arr = read->rhs.name;
+    indices = read->indices;
+  }
   // dim_vars are L, M, N, etc.
   vector<string> dim_vars = get_free_vars("dim", dimensions.size(), f);
   // addr_vars are ADDR_M, etc.
@@ -62,16 +69,16 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
   // addr
   string addr = get_free_var("addr", f);
 
-  for (int i = dimensions.size() - 1; i >= 0; i++) {
+  for (int i = dimensions.size() - 1; i >= 0; i--) {
     output << addr_vars.at(i) << " <- " << arr << " + " << (24 + i * 8) << endl;
     output << dim_vars.at(i) << " <- load " << addr_vars.at(i) << endl;
     output << dim_vars.at(i) << " <- " << dim_vars.at(i) << " >> 1\n";
   }
   output << mult << " <- 1\n";
-  for (int i = dimensions.size() - 1; i >= 0; i++) {
-    output << indexvars.at(i) << " <- " << write->indices.at(i).name << endl;
+  for (int i = dimensions.size() - 1; i >= 0; i--) {
+    output << indexvars.at(i) << " <- " << indices.at(i).name << endl;
     output << index << " <- " << indexvars.at(i) << " * " << mult << endl;
-    output << mult << " <- " << mult << " * " << dim_vars.at(i);
+    output << mult << " <- " << mult << " * " << dim_vars.at(i) << endl;
   }
   output << offset << " <- " << index << " * 8\n";
   output << offset << " <- " << index << " + " << (16 + (8 * dimensions.size())) << endl;
@@ -168,6 +175,7 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::ArrayAllocate> alloc = dynamic_pointer_cast<IR::ArrayAllocate>(i))
         {
+          cout << "ALLOCATE\n";
           string v0 = get_free_var("v0", f);
           vector<string> dim_vars = get_free_vars("dim", alloc->dimensions.size(), f);
           // iterate over the freevars, for each one:
@@ -209,6 +217,11 @@ void Compiler::Compile(IR::Program p) {
         {
           string addr = write_offset(output, f, write);
           output << "store " << addr << " <- " << write->rhs.name;
+        }
+        else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
+        {
+          string addr = write_offset(output, f, read);
+          output << read->lhs.name << " <- load " << addr << endl;
         }
         else if (shared_ptr<IR::LengthRead> lr = dynamic_pointer_cast<IR::LengthRead>(i))
         {
