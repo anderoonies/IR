@@ -209,6 +209,19 @@ void Compiler::Compile(IR::Program p) {
             output << call->args.at(0).name;
           output << ")\n";
         }
+        else if (shared_ptr<IR::CallAssign> call = dynamic_pointer_cast<IR::CallAssign>(i))
+        {
+          output << call->lhs.name << " <- ";
+          if (call->callee.name[0] == '%')
+            call->callee.name.erase(0,1);
+          output << "call " << call->callee.name << "(";
+          if (call->args.size() > 1)
+            for (auto arg : call->args)
+              output << arg.name << ", ";
+          else if (call->args.size() == 1)
+            output << call->args.at(0).name;
+          output << ")\n";
+        }
         else if (shared_ptr<IR::TupleAllocate> alloc = dynamic_pointer_cast<IR::TupleAllocate>(i))
         {
           output << alloc->lhs.name << " <- call allocate(" << alloc->dimension.name << ", 1)\n";
