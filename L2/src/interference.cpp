@@ -132,10 +132,14 @@ L2::Instruction *replace_var(L2::Instruction *i, string var, string var_name) {
     return comp;
   }
   else if (L2::RuntimeCall *rCall = dynamic_cast<L2::RuntimeCall *>(i)) {
+    if (rCall->function_name.name == var)
+      rCall->function_name.name = var_name;
     return rCall;
   }
   else if (L2::FunctionCall *fCall = dynamic_cast<L2::FunctionCall *>(i)) {
-    return rCall;
+    if (fCall->function_name.name == var)
+      fCall->function_name.name = var_name;
+    return fCall;
   }
   else if (L2::Label *lbl = dynamic_cast<L2::Label *>(i)) {
     return lbl;
@@ -471,9 +475,11 @@ L2::Function* Analysis::translate_to_L1(L2::Function *f, std::vector<std::string
       comp->cexp.rhs = convert_L2_item(comp->cexp.rhs);
     }
     else if (L2::RuntimeCall *rCall = dynamic_cast<L2::RuntimeCall *>(i)) {
+      rCall->function_name = convert_L2_item(rCall->function_name);
       ;
     }
     else if (L2::FunctionCall *fCall = dynamic_cast<L2::FunctionCall *>(i)) {
+      fCall->function_name = convert_L2_item(fCall->function_name);
       ;
     }
     else if (L2::Label *lbl = dynamic_cast<L2::Label *>(i)) {
