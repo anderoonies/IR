@@ -40,6 +40,37 @@ vector<string> get_free_vars(string seed, int n_vars, shared_ptr<IR::Function> f
   return vars;
 };
 
+void pass_data_structs(IR::Program p, shared_ptr<IR::Function> local_fn, shared_ptr<IR::Instruction> i) {
+  string fname;
+  vector<IR::IR_t> args;
+  map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
+  string destination_name;
+  string local_name;
+  string dest_name;
+  shared_ptr<IR::Instruction> local_data;
+  if (shared_ptr<IR::Call> call = dynamic_pointer_cast<IR::Call>(i)) {
+    fname = call->callee.name;
+    args = call->args;
+  } else if (shared_ptr<IR::CallAssign> call = dynamic_pointer_cast<IR::CallAssign>(i)){
+    fname = call->callee.name;
+    args = call->args;
+  }
+  // iterate over functions, finding the one being called
+  for (auto f : p.functions) {
+    if (f->name == fname) {
+      // iterate over the args, copying the data structs over with the correct names
+      for (int arg_i = 0; arg_i < args.size(); arg_i++) {
+        dest_name = f->vars.at(arg_i)->var.name;
+        data_iter = local_fn->data_structs.find(args.at(arg_i).name);
+        if (data_iter != local_fn->data_structs.end())
+          local_data = data_iter->second;
+          if (local_data != nullptr)
+            f->data_structs.insert(pair<string, shared_ptr<IR::Instruction>>(dest_name, local_data));
+      }
+    } 
+  }
+};
+
 string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR::Instruction> i) {
   vector<IR::IR_t> dimensions;
   string arr;
@@ -188,6 +219,7 @@ void Compiler::Compile(IR::Program p) {
           else if (call->args.size() == 1)
             output << call->args.at(0).name;
           output << ")\n";
+          pass_data_structs(p, f, call);
         }
         else if (shared_ptr<IR::CallAssign> call = dynamic_pointer_cast<IR::CallAssign>(i))
         {
@@ -201,6 +233,7 @@ void Compiler::Compile(IR::Program p) {
           else if (call->args.size() == 1)
             output << call->args.at(0).name;
           output << ")\n";
+          pass_data_structs(p, f, call);
         }
         else if (shared_ptr<IR::TupleAllocate> alloc = dynamic_pointer_cast<IR::TupleAllocate>(i))
         {
@@ -247,7 +280,12 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i))
         {
-          shared_ptr<IR::Instruction> alloc = f->data_structs.find(write->lhs.name)->second;
+          map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
+          data_iter = f->data_structs.find(write->lhs.name);
+          if (data_iter == f->data_structs.end()) {
+            data_iter = p.data_structs.find(write->lhs.name);
+          }
+          shared_ptr<IR::Instruction> alloc = data_iter->second;
           if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
             string addr = write_offset(output, f, write);
             output << "store " << addr << " <- " << write->rhs.name << endl;
@@ -259,7 +297,12 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
         {
-          shared_ptr<IR::Instruction> alloc = f->data_structs.find(read->rhs.name)->second;
+          map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
+          data_iter = f->data_structs.find(read->rhs.name);
+          if (data_iter == f->data_structs.end()) {
+            data_iter = p.data_structs.find(read->rhs.name);
+          }
+          shared_ptr<IR::Instruction> alloc = data_iter->second;
           if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
             string addr = write_offset(output, f, read);
             output << read->lhs.name << " <- load " << addr << endl;
