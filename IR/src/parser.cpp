@@ -184,13 +184,18 @@ namespace IR {
     > {};
 
   struct IR_declarations_rule :
-    pegtl::star<
-      seps,
+    pegtl::sor<
+      pegtl::seq<
+        IR_declaration_rule,
+        pegtl::star<
+          pegtl::one< ',' >,
+          seps,
+          IR_declaration_rule
+        >
+      >,
       IR_declaration_rule,
-      pegtl::one<','>,
       seps
     > {};
-
 
   struct IR_declaration_instruction_rule :
     pegtl::seq<
@@ -664,7 +669,7 @@ namespace IR {
     static void apply( const pegtl::input &in, IR::Program &p){
       shared_ptr<IR::Declaration> dec = make_shared<IR::Declaration>();
       dec->type = parsed_type;
-      dec->var = *parsed_variables.at(0);
+      dec->var = *parsed_variables.back();
       parsed_declarations.push_back(dec);
     }
   };
@@ -676,6 +681,7 @@ namespace IR {
         parsed_declarations.begin(),
         parsed_declarations.end()
       );
+      clear_memory();
     }
   };
   
