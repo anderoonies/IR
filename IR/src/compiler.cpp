@@ -266,7 +266,6 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
         {
-          string addr = write_offset(output, f, read);
           shared_ptr<IR::Instruction> alloc = f->data_structs.find(read->rhs.name)->second;
           if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
             string addr = write_offset(output, f, read);
