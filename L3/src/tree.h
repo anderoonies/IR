@@ -52,6 +52,6 @@ namespace tree {
 
 }
 
-vector<shared_ptr<tree::Tree>> generate_forest(L3::Function f);
+vector<shared_ptr<tree::Tree>> generate_forest(L3::Function f, string fun_id);
 
 vector<shared_ptr<tree::Tree>> merge_forest(vector<shared_ptr<tree::Tree>> trees);
