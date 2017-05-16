@@ -231,7 +231,6 @@ void Compiler::Compile(IR::Program p) {
             string addr = write_offset(output, f, write);
             output << "store " << addr << " <- " << write->rhs.name << endl;
           } else {
-            cout << "doing tuple\n";
             string newVar = get_free_var("newVar", f);
             output << newVar << " <- " << write->lhs.name << " + 8\n";
             output << "store " << newVar << " <- " << write->rhs.name << endl;
@@ -245,7 +244,6 @@ void Compiler::Compile(IR::Program p) {
             string addr = write_offset(output, f, write);
             output << read->rhs.name << " <- load " << addr << endl;
           } else {
-            cout << "doing tuple\n";
             string newVar = get_free_var("newVar", f);
             output << newVar << " <- " << read->rhs.name << " + 8\n";
             output << read->lhs.name << " <- load " << newVar << endl;

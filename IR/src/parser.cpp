@@ -731,7 +731,6 @@ namespace IR {
         IR::IR_item entry;
         entry.name = in.string();
         parsed_basic_block->entry_point = entry;
-        cout << "bb\n";
         clear_memory();
       }
   };
@@ -789,7 +788,6 @@ namespace IR {
 
   template<> struct action < IR_tuple_allocate_rule >{
     static void apply( const pegtl::input &in, IR::Program &p){
-      cout << "tuple action fired\n";
       shared_ptr<IR::TupleAllocate> alloc = make_shared<IR::TupleAllocate>();
       alloc->lhs = *parsed_variables.at(0);
       alloc->dimension = parsed_t_vals.back();
