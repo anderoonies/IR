@@ -196,5 +196,6 @@ namespace IR {
 
   struct Program {
     vector<shared_ptr<Function>> functions;
+    map<string, shared_ptr<Instruction>> data_structs;
   };
 }

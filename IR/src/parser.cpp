@@ -90,6 +90,8 @@ namespace IR {
 
   struct IR_op_rule :
     pegtl::sor<
+      pegtl::string< '<', '<' >,
+      pegtl::string< '>', '>' >,
       pegtl::string< '<' >,
       pegtl::string< '<', '=' >,
       pegtl::string< '=' >,
@@ -98,9 +100,7 @@ namespace IR {
       pegtl::string< '+' >,
       pegtl::string< '-' >,
       pegtl::string< '*' >,
-      pegtl::string< '&' >,
-      pegtl::string< '<', '<' >,
-      pegtl::string< '>', '>' >
+      pegtl::string< '&' >
     > {};
 
   struct IR_t_rule :
@@ -522,9 +522,11 @@ namespace IR {
     if (shared_ptr<IR::ArrayAllocate> alloc = dynamic_pointer_cast<IR::ArrayAllocate>(i)) 
     {
       p.functions.back()->data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
+      p.data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
     } else if (shared_ptr<IR::TupleAllocate> alloc = dynamic_pointer_cast<IR::TupleAllocate>(i))
     {
       p.functions.back()->data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
+      p.data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
     }
   };
 
