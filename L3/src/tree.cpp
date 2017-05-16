@@ -100,13 +100,13 @@ shared_ptr<tree::Tree> generate_tree(L3::Instruction *i, string fun_id){
   {
     instruction_tree->root = make_shared<tree::Tree>();
     instruction_tree->root->item = branch->dest;
-    instruction_tree->root->item.name = fun_id + instruction_tree->root->item.name;
+    instruction_tree->root->item.name = instruction_tree->root->item.name + fun_id;
     instruction_tree->op = tree::branch;
     instruction_tree->n_ops = 1;
   } else if (L3::Label *label = dynamic_cast<L3::Label *>(i))
   {
     instruction_tree->op = tree::label;
-    label->label.name = fun_id + label->label.name;
+    label->label.name = label->label.name + fun_id;
     instruction_tree->data = {label->label};
     instruction_tree->n_ops = 1;
   } else if (L3::CBranch *cbranch = dynamic_cast<L3::CBranch *>(i))
@@ -114,8 +114,8 @@ shared_ptr<tree::Tree> generate_tree(L3::Instruction *i, string fun_id){
     instruction_tree->root = make_shared<tree::Tree>();
     instruction_tree->root->item = cbranch->condition;
     instruction_tree->op = tree::cbranch;
-    cbranch->then_dest.name = fun_id + cbranch->then_dest.name;
-    cbranch->else_dest.name = fun_id + cbranch->else_dest.name;
+    cbranch->then_dest.name = cbranch->then_dest.name + fun_id;
+    cbranch->else_dest.name = cbranch->else_dest.name + fun_id;
     instruction_tree->data = {cbranch->then_dest, cbranch->else_dest};
     instruction_tree->n_ops = 3;
   } else if (L3::Return *ret = dynamic_cast<L3::Return *>(i))
