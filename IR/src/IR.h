@@ -191,7 +191,7 @@ namespace IR {
     string name;
     vector<Declaration> vars;
     vector<shared_ptr<BasicBlock>> blocks;
-    map<string, vector<IR_t>> data_structs;
+    map<string, shared_ptr<Instruction>> data_structs;
   };
 
   struct Program {

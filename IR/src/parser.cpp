@@ -370,6 +370,10 @@ namespace IR {
   struct IR_tuple_allocate_rule :
     pegtl::seq<
       seps,
+      IR_var_rule,
+      seps,
+      IR_arrow_rule,
+      seps,
       pegtl::string< 'n','e','w' >,
       seps,
       pegtl::string< 'T','u','p','l','e','(' >,
@@ -507,9 +511,10 @@ namespace IR {
   void add_alloc(IR::Program &p, shared_ptr<IR::Instruction> i) {
     if (shared_ptr<IR::ArrayAllocate> alloc = dynamic_pointer_cast<IR::ArrayAllocate>(i)) 
     {
-      p.functions.back()->data_structs.insert(pair<std::string, vector<IR_t>>(alloc->lhs.name, alloc->dimensions));
+      p.functions.back()->data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
     } else if (shared_ptr<IR::TupleAllocate> alloc = dynamic_pointer_cast<IR::TupleAllocate>(i))
     {
+      p.functions.back()->data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
     }
   };
 
@@ -776,6 +781,18 @@ namespace IR {
           parsed_args.begin(),
           parsed_args.end()
       );
+      add_instruction(p, alloc);
+      add_alloc(p, alloc);
+      clear_memory();
+    }
+  };
+
+  template<> struct action < IR_tuple_allocate_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      cout << "tuple action fired\n";
+      shared_ptr<IR::TupleAllocate> alloc = make_shared<IR::TupleAllocate>();
+      alloc->lhs = *parsed_variables.at(0);
+      alloc->dimension = parsed_t_vals.back();
       add_instruction(p, alloc);
       add_alloc(p, alloc);
       clear_memory();

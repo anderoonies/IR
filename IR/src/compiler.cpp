@@ -43,12 +43,14 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
   vector<IR::IR_t> dimensions;
   string arr;
   vector<IR::IR_t> indices;
+  shared_ptr<IR::ArrayAllocate> alloc;
+  dimensions = alloc->dimensions;
   if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i)) {
-    dimensions = f->data_structs.find(write->lhs.name)->second;
+    alloc = dynamic_pointer_cast<IR::ArrayAllocate>(f->data_structs.find(write->lhs.name)->second);
     arr = write->lhs.name; 
     indices = write->indices;
   } else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i)) {
-    dimensions = f->data_structs.find(read->rhs.name)->second;
+    alloc = dynamic_pointer_cast<IR::ArrayAllocate>(f->data_structs.find(read->rhs.name)->second);
     arr = read->rhs.name;
     indices = read->indices;
   }
@@ -177,9 +179,12 @@ void Compiler::Compile(IR::Program p) {
             output << call->args.at(0).name;
           output << ")\n";
         }
+        else if (shared_ptr<IR::TupleAllocate> alloc = dynamic_pointer_cast<IR::TupleAllocate>(i))
+        {
+          output << alloc->lhs.name << " <- call allocate(" << alloc->dimension.name << ", 1)\n";
+        }
         else if (shared_ptr<IR::ArrayAllocate> alloc = dynamic_pointer_cast<IR::ArrayAllocate>(i))
         {
-          cout << "ALLOCATE\n";
           string v0 = get_free_var("v0", f);
           vector<string> dim_vars = get_free_vars("dim", alloc->dimensions.size(), f);
           // iterate over the freevars, for each one:
@@ -219,13 +224,30 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i))
         {
-          string addr = write_offset(output, f, write);
-          output << "store " << addr << " <- " << write->rhs.name << endl;
+          shared_ptr<IR::Instruction> alloc = f->data_structs.find(write->lhs.name)->second;
+          if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
+            string addr = write_offset(output, f, write);
+            output << "store " << addr << " <- " << write->rhs.name << endl;
+          } else {
+            cout << "doing tuple\n";
+            string newVar = get_free_var("newVar", f);
+            output << newVar << " <- " << write->lhs.name << " + 8\n";
+            output << "store " << newVar << " <- " << write->rhs.name << endl;
+          }
         }
         else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
         {
           string addr = write_offset(output, f, read);
-          output << read->lhs.name << " <- load " << addr << endl;
+          shared_ptr<IR::Instruction> alloc = f->data_structs.find(write->lhs.name)->second;
+          if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
+            string addr = write_offset(output, f, write);
+            output << read->rhs.name << " <- load " << addr << endl;
+          } else {
+            cout << "doing tuple\n";
+            string newVar = get_free_var("newVar", f);
+            output << newVar << " <- " << read->rhs.name << " + 8\n";
+            output << read->lhs.name << " <- load " << newVar << endl;
+          }
         }
         else if (shared_ptr<IR::LengthRead> lr = dynamic_pointer_cast<IR::LengthRead>(i))
         {
