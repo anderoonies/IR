@@ -54,16 +54,13 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
     indices = read->indices;
   }
   dimensions = alloc->dimensions;
-  // dim_vars are L, M, N, etc.
-  vector<string> dim_vars = get_free_vars("dim", dimensions.size(), f);
   // addr_vars are ADDR_M, etc.
   vector<string> addr_vars = get_free_vars("addr", dimensions.size(), f);
-  // newvars are newVar1, newVar2. etc. not clear if they're needed yet
+  // newvars are newVar1, newVar2. etc.
   vector<string> newvars = get_free_vars("newVar", dimensions.size(), f);
   // indexvars may not be needed.
   vector<string> indexvars = get_free_vars("idx", dimensions.size(), f);
   // mult is where the factor to multiply the offset by is stored
-  string mult = get_free_var("mult", f);
   // index is 'index'
   string index = get_free_var("index", f);
   // offset
@@ -71,20 +68,51 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
   // addr
   string addr = get_free_var("addr", f);
 
-  for (int i = dimensions.size() - 1; i >= 0; i--) {
-    output << addr_vars.at(i) << " <- " << arr << " + " << (16 + i * 8) << endl;
-    output << dim_vars.at(i) << " <- load " << addr_vars.at(i) << endl;
+  //for (int i = dimensions.size() - 1; i >= 0; i--) {
+  //  output << addr_vars.at(i) << " <- " << arr << " + " << (16 + i * 8) << endl;
+  //  output << dim_vars.at(i) << " <- load " << addr_vars.at(i) << endl;
+  //  output << dim_vars.at(i) << " <- " << dim_vars.at(i) << " >> 1\n";
+  //}
+  //output << mult << " <- " << dimensions.back().name << endl;
+  //for (int i = dimensions.size() - 1; i > 0; i--) {
+  //  output << indexvars.at(i) << " <- " << indices.at(i).name << endl;
+  //  output << index << " <- " << indexvars.at(i) << " * " << mult << endl;
+  //  output << mult << " <- " << mult << " * " << dimensions.at(i - 1).name << endl;
+  //}
+  //output << index << " <- " << index << " + " << indices.back().name << endl;
+  //output << offset << " <- " << index << " * 8\n";
+  //output << offset << " <- " << index << " + " << (16 + (8 * dimensions.size())) << endl;
+  //output << addr << " <- " << arr << " + " << offset << endl;
+  // second try
+  string ret = "";
+  string dim_addr = get_free_var("dim_addr", f);
+  string dim_len = get_free_var("dim_len", f);
+  string mult = get_free_var("mult", f);
+  string mix_sum = get_free_var("mix_sum", f);
+  string sum = get_free_var("sum", f);
+  string cur_dim_len;
+  // dim_vars are L, M, N, etc.
+  vector<string> dim_vars = get_free_vars("dim", dimensions.size(), f);
+
+  for (int i = 1; i < indices.size(); i++) {
+    cur_dim_len = get_free_var(dim_len + "i", f);
+    output << dim_addr << " <- " << arr << " + " << (16 + 8 * i) << endl;
+    output << dim_vars.at(i) << " <- load " << dim_addr << endl;
     output << dim_vars.at(i) << " <- " << dim_vars.at(i) << " >> 1\n";
   }
-  output << mult << " <- " << dimensions.back().name << endl;
-  for (int i = dimensions.size() - 1; i > 0; i--) {
-    output << indexvars.at(i) << " <- " << indices.at(i).name << endl;
-    output << index << " <- " << indexvars.at(i) << " * " << mult << endl;
-    output << mult << " <- " << mult << " * " << dimensions.at(i - 1).name << endl;
+
+  output << sum << " <- 0\n";
+  output << mult << " <- 1\n";
+  reverse(indices.begin(), indices.end());
+  for (int i = 0; i < indices.size(); i++) {
+    if (i > 0)
+      output << mult << " <- " << mult << " * " << dim_vars.at(i) << endl;
+    output << mix_sum << " <- " << mult << " * " << indices.at(i).name << endl;
+    output << sum << " <- " << sum << " + " << mix_sum << endl;
   }
-  output << index << " <- " << index << " + " << indices.back().name << endl;
-  output << offset << " <- " << index << " * 8\n";
-  output << offset << " <- " << index << " + " << (16 + (8 * dimensions.size())) << endl;
+
+  output << offset << " <- " << sum << " * 8\n";
+  output << offset << " <- " << offset << " + " << (16 + indices.size()*8) << endl;
   output << addr << " <- " << arr << " + " << offset << endl;
   return addr;
 };
