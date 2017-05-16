@@ -492,7 +492,7 @@ namespace IR {
   vector<IR::IR_u> parsed_u_vals;
   vector<IR::IR_t> parsed_args;
   vector<IR::Variable> parsed_vars;
-  vector<IR::Declaration> parsed_declarations;
+  vector<shared_ptr<IR::Declaration>> parsed_declarations;
   IR_callee parsed_callee;
   vector<std::string> parsed_strings;
   vector<std::string> parsed_labels;
@@ -532,6 +532,7 @@ namespace IR {
     parsed_strings.clear();
     parsed_args.clear();
     parsed_indices.clear();
+    parsed_declarations.clear();
   }
   
   template< typename Rule >
@@ -637,6 +638,7 @@ namespace IR {
     static void apply( const pegtl::input &in, IR::Program &p){
       // vars are a property of a function itself.
       // TODO
+
       //clear_memory();
     }
   };
@@ -652,6 +654,26 @@ namespace IR {
   template<> struct action < IR_T_rule >{
     static void apply( const pegtl::input &in, IR::Program &p){
       parsed_T.name = in.string();
+    }
+  };
+
+  template<> struct action < IR_declaration_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      shared_ptr<IR::Declaration> dec = make_shared<IR::Declaration>();
+      dec->type = parsed_type;
+      dec->var = *parsed_variables.at(0);
+      parsed_declarations.push_back(dec);
+    }
+  };
+
+  template<> struct action < IR_declarations_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      p.functions.back()->vars.insert(
+        p.functions.back()->vars.end(),
+        parsed_declarations.begin(),
+        parsed_declarations.end()
+      );
+      clear_memory();
     }
   };
   

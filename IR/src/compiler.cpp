@@ -55,39 +55,16 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
     indices = read->indices;
   }
   dimensions = alloc->dimensions;
-  // addr_vars are ADDR_M, etc.
-  vector<string> addr_vars = get_free_vars("addr", dimensions.size(), f);
-  // newvars are newVar1, newVar2. etc.
-  vector<string> newvars = get_free_vars("newVar", dimensions.size(), f);
-  // indexvars may not be needed.
-  vector<string> indexvars = get_free_vars("idx", dimensions.size(), f);
-  // mult is where the factor to multiply the offset by is stored
   // index is 'index'
   string index = get_free_var("index", f);
   // offset
   string offset = get_free_var("offset", f);
   // addr
   string addr = get_free_var("addr", f);
-
-  //for (int i = dimensions.size() - 1; i >= 0; i--) {
-  //  output << addr_vars.at(i) << " <- " << arr << " + " << (16 + i * 8) << endl;
-  //  output << dim_vars.at(i) << " <- load " << addr_vars.at(i) << endl;
-  //  output << dim_vars.at(i) << " <- " << dim_vars.at(i) << " >> 1\n";
-  //}
-  //output << mult << " <- " << dimensions.back().name << endl;
-  //for (int i = dimensions.size() - 1; i > 0; i--) {
-  //  output << indexvars.at(i) << " <- " << indices.at(i).name << endl;
-  //  output << index << " <- " << indexvars.at(i) << " * " << mult << endl;
-  //  output << mult << " <- " << mult << " * " << dimensions.at(i - 1).name << endl;
-  //}
-  //output << index << " <- " << index << " + " << indices.back().name << endl;
-  //output << offset << " <- " << index << " * 8\n";
-  //output << offset << " <- " << index << " + " << (16 + (8 * dimensions.size())) << endl;
-  //output << addr << " <- " << arr << " + " << offset << endl;
-  // second try
   string ret = "";
   string dim_addr = get_free_var("dim_addr", f);
   string dim_len = get_free_var("dim_len", f);
+  // mult is where the factor to multiply the offset by is stored
   string mult = get_free_var("mult", f);
   string mix_sum = get_free_var("mix_sum", f);
   string sum = get_free_var("sum", f);
@@ -123,9 +100,12 @@ void Compiler::Compile(IR::Program p) {
 
   for (auto f : p.functions) {
     // write the function name and its args
-    output << "define " << f->name << "( ";
-    for (auto dec : f->vars)
-      output << dec.type.toString() << " " << dec.var.name << ", ";
+    output << "define " << f->name << "(";
+    if (f->vars.size() > 1)
+      for (auto dec: f->vars)
+        output << dec->var.name << ", ";
+    else if (f->vars.size() == 1)
+      output << f->vars.at(0)->var.name;
     output << "){\n";
     for (auto bb : f->blocks) {
       output << bb->entry_point.name << endl;

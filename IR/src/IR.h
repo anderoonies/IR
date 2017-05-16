@@ -189,7 +189,7 @@ namespace IR {
   struct Function {
     Type return_type;
     string name;
-    vector<Declaration> vars;
+    vector<shared_ptr<Declaration>> vars;
     vector<shared_ptr<BasicBlock>> blocks;
     map<string, shared_ptr<Instruction>> data_structs;
   };
