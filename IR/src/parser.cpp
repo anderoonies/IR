@@ -185,7 +185,10 @@ namespace IR {
 
   struct IR_declarations_rule :
     pegtl::star<
-      IR_declaration_rule
+      seps,
+      IR_declaration_rule,
+      pegtl::one<','>,
+      seps
     > {};
 
 
@@ -673,7 +676,6 @@ namespace IR {
         parsed_declarations.begin(),
         parsed_declarations.end()
       );
-      clear_memory();
     }
   };
   
