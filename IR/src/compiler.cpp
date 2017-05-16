@@ -44,7 +44,6 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
   string arr;
   vector<IR::IR_t> indices;
   shared_ptr<IR::ArrayAllocate> alloc;
-  dimensions = alloc->dimensions;
   if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i)) {
     alloc = dynamic_pointer_cast<IR::ArrayAllocate>(f->data_structs.find(write->lhs.name)->second);
     arr = write->lhs.name; 
@@ -54,6 +53,7 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
     arr = read->rhs.name;
     indices = read->indices;
   }
+  dimensions = alloc->dimensions;
   // dim_vars are L, M, N, etc.
   vector<string> dim_vars = get_free_vars("dim", dimensions.size(), f);
   // addr_vars are ADDR_M, etc.
@@ -239,10 +239,10 @@ void Compiler::Compile(IR::Program p) {
         else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
         {
           string addr = write_offset(output, f, read);
-          shared_ptr<IR::Instruction> alloc = f->data_structs.find(write->lhs.name)->second;
+          shared_ptr<IR::Instruction> alloc = f->data_structs.find(read->rhs.name)->second;
           if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
-            string addr = write_offset(output, f, write);
-            output << read->rhs.name << " <- load " << addr << endl;
+            string addr = write_offset(output, f, read);
+            output << read->lhs.name << " <- load " << addr << endl;
           } else {
             string newVar = get_free_var("newVar", f);
             output << newVar << " <- " << read->rhs.name << " + 8\n";
