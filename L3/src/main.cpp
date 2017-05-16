@@ -64,8 +64,8 @@ int main( int argc, char **argv ){
 
   // generate trees
   for (auto fun : p.functions) {
-    string fun_id = fun->name + "_id_";
     output << "(" << fun->name << endl;
+    string fun_id = fun->name.erase(0, 1) + "uniqid";
     output << fun->args.size() << " 0\n";
     vector<shared_ptr<tree::Tree>> forest = generate_forest(*fun, fun_id);
     forest = merge_forest(forest);
