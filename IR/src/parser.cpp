@@ -222,6 +222,15 @@ namespace IR {
       seps
     > {};
 
+  struct IR_indices_rule :
+    pegtl::plus<
+      seps,
+      pegtl::one< '[' >,
+      IR_t_rule,
+      pegtl::one< ']' >,
+      seps
+    > {};
+
   struct IR_array_read_rule :
     pegtl::seq<
       seps,
@@ -231,11 +240,7 @@ namespace IR {
       seps,
       IR_var_rule,
       seps,
-      pegtl::plus<
-        pegtl::one< '[' >,
-        IR_t_rule,
-        pegtl::one< ']' >
-      >,
+      IR_indices_rule,
       seps
     > {};
 
@@ -244,11 +249,7 @@ namespace IR {
       seps,
       IR_var_rule,
       seps,
-      pegtl::plus<
-        pegtl::one< '[' >,
-        IR_t_rule,
-        pegtl::one< ']' >
-      >,
+      IR_indices_rule,
       seps,
       IR_arrow_rule,
       seps,
@@ -487,6 +488,7 @@ namespace IR {
   vector<shared_ptr<IR::Variable>> parsed_variables;
   vector<IR::IR_s> parsed_s_vals;
   vector<IR::IR_t> parsed_t_vals;
+  vector<IR::IR_t> parsed_indices;
   vector<IR::IR_u> parsed_u_vals;
   vector<IR::IR_t> parsed_args;
   vector<IR::Variable> parsed_vars;
@@ -529,6 +531,7 @@ namespace IR {
     parsed_u_vals.clear();
     parsed_strings.clear();
     parsed_args.clear();
+    parsed_indices.clear();
   }
   
   template< typename Rule >
@@ -808,6 +811,16 @@ namespace IR {
     }
   };
 
+  template<> struct action < IR_indices_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      parsed_indices.insert(
+        parsed_indices.end(),
+        parsed_t_vals.begin(),
+        parsed_t_vals.end()
+      );
+    }
+  };
+
   template<> struct action < IR_array_read_rule >{
     static void apply( const pegtl::input &in, IR::Program &p){
       shared_ptr<IR::IndexRead> read = make_shared<IR::IndexRead>();
@@ -815,8 +828,8 @@ namespace IR {
       read->rhs = *parsed_variables.at(1);
       read->indices.insert(
         read->indices.end(),
-        parsed_t_vals.begin(),
-        parsed_t_vals.end()
+        parsed_indices.begin(),
+        parsed_indices.end()
       );
       add_instruction(p, read);
       clear_memory();
@@ -830,8 +843,8 @@ namespace IR {
       write->rhs = parsed_s_vals.back();
       write->indices.insert(
         write->indices.end(),
-        parsed_t_vals.begin(),
-        parsed_t_vals.end()
+        parsed_indices.begin(),
+        parsed_indices.end()
       );
       add_instruction(p, write);
       clear_memory();

@@ -96,7 +96,6 @@ string write_offset(ofstream &output, shared_ptr<IR::Function> f, shared_ptr<IR:
   vector<string> dim_vars = get_free_vars("dim", dimensions.size(), f);
 
   for (int i = 1; i < indices.size(); i++) {
-    cur_dim_len = get_free_var(dim_len + "i", f);
     output << dim_addr << " <- " << arr << " + " << (16 + 8 * i) << endl;
     output << dim_vars.at(i) << " <- load " << dim_addr << endl;
     output << dim_vars.at(i) << " <- " << dim_vars.at(i) << " >> 1\n";
