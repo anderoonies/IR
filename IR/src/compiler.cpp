@@ -171,6 +171,8 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::Call> call = dynamic_pointer_cast<IR::Call>(i))
         {
+          if (call->callee.name[0] == '%')
+            call->callee.name.erase(0,1);
           output << "call " << call->callee.name << "(";
           if (call->args.size() > 1)
             for (auto arg : call->args)
