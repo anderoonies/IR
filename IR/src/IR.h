@@ -31,13 +31,11 @@ namespace IR {
     bool runtime = false;
   };
 
-  struct Type { 
-    enum type { array, tuple, code };
-    int array_dim = 0;
+  enum type { array, tuple, integer, code };
 
-    string toString() {
-      return "foo";
-    }
+  struct Type { 
+    type type;
+    int array_dim = 0;
   };
 
   enum Operator { plus, minus, times, l3and, lshift, rshift,
@@ -191,7 +189,7 @@ namespace IR {
     string name;
     vector<shared_ptr<Declaration>> vars;
     vector<shared_ptr<BasicBlock>> blocks;
-    map<string, shared_ptr<Instruction>> data_structs;
+    map<string, shared_ptr<Declaration>> data_structs;
   };
 
   struct Program {
