@@ -137,6 +137,11 @@ void Compiler::Compile(IR::Program p) {
         output << dec->var.name << ", ";
     else if (f->vars.size() == 1)
       output << f->vars.at(0)->var.name;
+    for (int var_i = 0; var_i < f->vars.size(); var_i++) {
+      output << f->vars[var_i]->var.name;
+      if (var_i < f->vars.size() - 1)
+        output << ", ";
+    }
     output << "){\n";
     for (auto bb : f->blocks) {
       output << bb->entry_point.name << endl;
