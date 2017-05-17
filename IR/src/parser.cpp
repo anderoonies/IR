@@ -678,7 +678,7 @@ namespace IR {
       std::string int_type = "int64";
       std::string tuple_type = "tuple";
       std::string code_type = "code";
-      if (int_type.compare(type) == 0) {
+      if (int_type.compare(type.substr(0, 5)) == 0) {
         if (parsed_array_declaration_dimension > 0) {
           parsed_type.dec_type = IR::array;
           parsed_type.array_dim = parsed_array_declaration_dimension;
