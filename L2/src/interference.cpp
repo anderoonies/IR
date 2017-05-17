@@ -194,10 +194,10 @@ bool needs_spilled(L2::Instruction *i, string var) {
     return (comp->lhs.name == var || comp->cexp.lhs.name == var || comp->cexp.rhs.name == var);
   }
   else if (L2::RuntimeCall *rCall = dynamic_cast<L2::RuntimeCall *>(i)) {
-    return false;
+    return (rCall->function_name.name == var);
   }
   else if (L2::FunctionCall *fCall = dynamic_cast<L2::FunctionCall *>(i)) {
-    return false;
+    return (rCall->function_name.name == var);
   }
   else if (L2::Label *lbl = dynamic_cast<L2::Label *>(i)) {
     return false;
