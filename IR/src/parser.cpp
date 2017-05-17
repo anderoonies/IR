@@ -680,15 +680,15 @@ namespace IR {
       std::string code_type = "code";
       if (int_type.compare(type) == 0) {
         if (parsed_array_declaration_dimension > 0) {
-          parsed_type.type = IR::array;
+          parsed_type.dec_type = IR::array;
           parsed_type.array_dim = parsed_array_declaration_dimension;
         } else {
-          parsed_type.type = IR::integer;
+          parsed_type.dec_type = IR::integer;
         }
       } else if (tuple_type.compare(type) == 0) {
-        parsed_type.type = IR::tuple;
+        parsed_type.dec_type = IR::tuple;
       } else if (code_type.compare(type) == 0) {
-        parsed_type.type = IR::code;
+        parsed_type.dec_type = IR::code;
       }
     }
   };
@@ -697,8 +697,6 @@ namespace IR {
     static void apply( const pegtl::input &in, IR::Program &p){
       shared_ptr<IR::Declaration> dec = make_shared<IR::Declaration>();
       dec->type = parsed_type;
-      if (parsed_type.type == IR::array)
-        dec->type.array_dim = parsed_indices.size();
       dec->var = *parsed_variables.back();
       parsed_declarations.push_back(dec);
     }

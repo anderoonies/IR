@@ -269,7 +269,7 @@ void Compiler::Compile(IR::Program p) {
           IR::Type data_type;
           auto data_struct_iter = f->data_structs.find(write->lhs.name);
           data_type = data_struct_iter->second->type;
-          if (data_type.type == IR::array) {
+          if (data_type.dec_type == IR::array) {
             string addr = write_offset(output, f, write);
             output << "store " << addr << " <- " << write->rhs.name << endl;
           } else {
@@ -283,7 +283,7 @@ void Compiler::Compile(IR::Program p) {
           IR::Type data_type;
           auto data_struct_iter = f->data_structs.find(read->rhs.name);
           data_type = data_struct_iter->second->type;
-          if (data_type.type == IR::array) {
+          if (data_type.dec_type == IR::array) {
             string addr = write_offset(output, f, read);
             output << read->lhs.name << " <- load " << addr << endl;
           } else {

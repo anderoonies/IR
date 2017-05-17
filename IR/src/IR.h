@@ -34,7 +34,7 @@ namespace IR {
   enum type { array, tuple, integer, code };
 
   struct Type { 
-    type type;
+    type dec_type;
     int array_dim = 0;
   };
 
