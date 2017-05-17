@@ -213,11 +213,11 @@ void Compiler::Compile(IR::Program p) {
           if (call->callee.name[0] == '%')
             call->callee.name.erase(0,1);
           output << "call " << call->callee.name << "(";
-          if (call->args.size() > 1)
-            for (auto arg : call->args)
-              output << arg.name << ", ";
-          else if (call->args.size() == 1)
-            output << call->args.at(0).name;
+          for (int arg_i = 0; arg_i < call->args.size(); arg_i++) {
+            output << call->args[arg_i].name;
+            if (arg_i < call->args.size() - 1)
+              output << ", ";
+          }
           output << ")\n";
           pass_data_structs(p, f, call);
         }
@@ -227,11 +227,11 @@ void Compiler::Compile(IR::Program p) {
           if (call->callee.name[0] == '%')
             call->callee.name.erase(0,1);
           output << "call " << call->callee.name << "(";
-          if (call->args.size() > 1)
-            for (auto arg : call->args)
-              output << arg.name << ", ";
-          else if (call->args.size() == 1)
-            output << call->args.at(0).name;
+          for (int arg_i = 0; arg_i < call->args.size(); arg_i++) {
+            output << call->args[arg_i].name;
+            if (arg_i < call->args.size() - 1)
+              output << ", ";
+          }
           output << ")\n";
           pass_data_structs(p, f, call);
         }
