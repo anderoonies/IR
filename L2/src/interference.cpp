@@ -197,7 +197,7 @@ bool needs_spilled(L2::Instruction *i, string var) {
     return (rCall->function_name.name == var);
   }
   else if (L2::FunctionCall *fCall = dynamic_cast<L2::FunctionCall *>(i)) {
-    return (rCall->function_name.name == var);
+    return (fCall->function_name.name == var);
   }
   else if (L2::Label *lbl = dynamic_cast<L2::Label *>(i)) {
     return false;
