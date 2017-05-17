@@ -156,13 +156,18 @@ namespace IR {
       pegtl::string< 'a','r','r','a','y','-','e','r','r','o','r' >
     > {};
 
+  struct IR_brackets_rule :
+    pegtl::seq<
+      pegtl::star<
+        pegtl::string< '[',']'>
+      >
+    > {};
+
   struct IR_type_rule :
     pegtl::sor<
       pegtl::seq<
         pegtl::string< 'i','n','t','6','4' >,
-        pegtl::star<
-          pegtl::string< '[',']'>
-        >
+        IR_brackets_rule
       >,
       pegtl::string< 't','u','p','l','e' >,
       pegtl::string< 'c','o','d','e' >
@@ -505,6 +510,7 @@ namespace IR {
   vector<std::string> parsed_strings;
   vector<std::string> parsed_labels;
   vector<std::string> parsed_char_seqs;
+  int64_t parsed_array_declaration_dimension = -1;
   Operator parsed_op;
   Type parsed_type;
   IR_item parsed_T;
@@ -516,18 +522,6 @@ namespace IR {
   
   void add_instruction(IR::Program &p, shared_ptr<IR::Instruction> i) {
     parsed_basic_block->instructions.push_back(i);
-  };
-
-  void add_alloc(IR::Program &p, shared_ptr<IR::Instruction> i) {
-    if (shared_ptr<IR::ArrayAllocate> alloc = dynamic_pointer_cast<IR::ArrayAllocate>(i)) 
-    {
-      p.functions.back()->data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
-      p.data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
-    } else if (shared_ptr<IR::TupleAllocate> alloc = dynamic_pointer_cast<IR::TupleAllocate>(i))
-    {
-      p.functions.back()->data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
-      p.data_structs.insert(pair<std::string, shared_ptr<IR::Instruction>>(alloc->lhs.name, alloc));
-    }
   };
 
   void end_block(IR::Program &p) {
@@ -542,6 +536,7 @@ namespace IR {
     parsed_strings.clear();
     parsed_args.clear();
     parsed_indices.clear();
+    parsed_array_declaration_dimension = -1;
     parsed_declarations.clear();
   }
   
@@ -667,10 +662,39 @@ namespace IR {
     }
   };
 
+  template<> struct action < IR_brackets_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      parsed_array_declaration_dimension = in.string().size() / 2;
+    }
+  };
+
+  template<> struct action < IR_type_rule >{
+    static void apply( const pegtl::input &in, IR::Program &p){
+      std::string type = in.string();
+      std::string int_type = "int64";
+      std::string tuple_type = "tuple";
+      std::string code_type = "code";
+      if (int_type.compare(type) == 0) {
+        if (parsed_array_declaration_dimension > 0) {
+          parsed_type.type = IR::array;
+          parsed_type.array_dim = parsed_array_declaration_dimension;
+        } else {
+          parsed_type.type = IR::integer;
+        }
+      } else if (tuple_type.compare(type) == 0) {
+        parsed_type.type = IR::tuple;
+      } else if (code_type.compare(type) == 0) {
+        parsed_type.type = IR::code;
+      }
+    }
+  };
+
   template<> struct action < IR_declaration_rule >{
     static void apply( const pegtl::input &in, IR::Program &p){
       shared_ptr<IR::Declaration> dec = make_shared<IR::Declaration>();
       dec->type = parsed_type;
+      if (parsed_type.type == IR::array)
+        dec->type.array_dim = parsed_indices.size();
       dec->var = *parsed_variables.back();
       parsed_declarations.push_back(dec);
     }
@@ -816,7 +840,6 @@ namespace IR {
           parsed_args.end()
       );
       add_instruction(p, alloc);
-      add_alloc(p, alloc);
       clear_memory();
     }
   };
@@ -827,7 +850,6 @@ namespace IR {
       alloc->lhs = *parsed_variables.at(0);
       alloc->dimension = parsed_t_vals.back();
       add_instruction(p, alloc);
-      add_alloc(p, alloc);
       clear_memory();
     }
   };
