@@ -280,13 +280,13 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::IndexWrite> write = dynamic_pointer_cast<IR::IndexWrite>(i))
         {
-          map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
-          data_iter = f->data_structs.find(write->lhs.name);
-          if (data_iter == f->data_structs.end()) {
-            data_iter = p.data_structs.find(write->lhs.name);
-          }
-          shared_ptr<IR::Instruction> alloc = data_iter->second;
           if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
+            map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
+            data_iter = f->data_structs.find(write->lhs.name);
+            if (data_iter == f->data_structs.end()) {
+              data_iter = p.data_structs.find(write->lhs.name);
+            }
+            shared_ptr<IR::Instruction> alloc = data_iter->second;
             string addr = write_offset(output, f, write);
             output << "store " << addr << " <- " << write->rhs.name << endl;
           } else {
@@ -297,15 +297,15 @@ void Compiler::Compile(IR::Program p) {
         }
         else if (shared_ptr<IR::IndexRead> read = dynamic_pointer_cast<IR::IndexRead>(i))
         {
-          map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
-          data_iter = f->data_structs.find(read->rhs.name);
-          if (data_iter == f->data_structs.end()) {
-            data_iter = p.data_structs.find(read->rhs.name);
-          }
-          shared_ptr<IR::Instruction> alloc = data_iter->second;
           if (shared_ptr<IR::ArrayAllocate> array_alloc = dynamic_pointer_cast<IR::ArrayAllocate>(alloc)) {
             string addr = write_offset(output, f, read);
             output << read->lhs.name << " <- load " << addr << endl;
+            map<string, shared_ptr<IR::Instruction>>::iterator data_iter;
+            data_iter = f->data_structs.find(read->rhs.name);
+            if (data_iter == f->data_structs.end()) {
+              data_iter = p.data_structs.find(read->rhs.name);
+            }
+            shared_ptr<IR::Instruction> alloc = data_iter->second;
           } else {
             string newVar = get_free_var("newVar", f);
             output << newVar << " <- " << read->rhs.name << " + " << 8 * (1 + stoi(read->indices.at(0).name)) << endl;
