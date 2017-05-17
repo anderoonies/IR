@@ -606,6 +606,8 @@ namespace IR {
     static void apply( const pegtl::input &in, IR::Program &p){
       IR::IR_u u;
       u.name = in.string();
+      if (u.name[0] == '%')
+        u.name.erase(0,1);
       parsed_u_vals.push_back(u);
     }
   };
@@ -624,6 +626,8 @@ namespace IR {
     static void apply( const pegtl::input &in, IR::Program &p){
       IR::IR_s s;
       s.name = in.string();
+      if (s.name[0] == '%')
+        s.name.erase(0,1);
       parsed_s_vals.push_back(s);
     }
   };
